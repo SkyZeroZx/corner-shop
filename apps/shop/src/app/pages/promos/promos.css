@@ -1,0 +1,42 @@
+.toggle {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 16px 0;
+}
+
+.toggle span {
+  margin-right: 8px;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.toggle button {
+  min-height: 32px;
+  padding: 0 16px;
+  border-color: var(--border);
+  border-radius: 16px;
+  background: var(--surface);
+  color: var(--text);
+  font-weight: normal;
+}
+
+.toggle button[aria-pressed='true'] {
+  border-color: var(--primary);
+  background: var(--primary-tint);
+  color: var(--primary-text);
+  font-weight: bold;
+}
+
+.promo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.promo div {
+  display: grid;
+  gap: 4px;
+}

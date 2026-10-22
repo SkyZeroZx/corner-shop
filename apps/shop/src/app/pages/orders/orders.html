@@ -1,0 +1,19 @@
+<p class="eyebrow">Lab 5 · Service Worker data cache</p>
+<h1>My orders</h1>
+
+@if (orders.hasValue()) {
+  <p data-testid="owner">
+    Orders for <strong>{{ orders.value().owner }}</strong>
+  </p>
+  <ul class="list">
+    @for (order of orders.value().orders; track order.id) {
+      <li class="card order">
+        <strong>{{ order.id }}</strong>
+        <span>{{ order.items.join(', ') }}</span>
+        <span>S/ {{ order.total | number: '1.2-2' }}</span>
+      </li>
+    }
+  </ul>
+} @else if (orders.error()) {
+  <p class="card warn">Sign in to see your orders.</p>
+}

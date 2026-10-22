@@ -1,0 +1,71 @@
+{
+  "name": "shop",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "prefix": "app",
+  "sourceRoot": "apps/shop/src",
+  "tags": [],
+  "targets": {
+    "build": {
+      "executor": "@angular/build:application",
+      "outputs": ["{options.outputPath}"],
+      "defaultConfiguration": "production",
+      "options": {
+        "outputPath": "dist/apps/shop",
+        "browser": "apps/shop/src/main.ts",
+        "tsConfig": "apps/shop/tsconfig.app.json",
+        "assets": [
+          {
+            "glob": "**/*",
+            "input": "apps/shop/public"
+          }
+        ],
+        "styles": ["apps/shop/src/styles.css"],
+        "server": "apps/shop/src/main.server.ts",
+        "ssr": {
+          "entry": "apps/shop/src/server.ts"
+        },
+        "outputMode": "server",
+        "security": {
+          "allowedHosts": ["localhost"]
+        }
+      },
+      "configurations": {
+        "production": {
+          "budgets": [
+            {
+              "type": "initial",
+              "maximumWarning": "500kb",
+              "maximumError": "1mb"
+            },
+            {
+              "type": "anyComponentStyle",
+              "maximumWarning": "4kb",
+              "maximumError": "8kb"
+            }
+          ],
+          "outputHashing": "all",
+          "serviceWorker": "apps/shop/ngsw-config.json"
+        },
+        "development": {
+          "optimization": false,
+          "extractLicenses": false,
+          "sourceMap": true
+        }
+      }
+    },
+    "serve": {
+      "continuous": true,
+      "executor": "@angular/build:dev-server",
+      "defaultConfiguration": "development",
+      "configurations": {
+        "production": {
+          "buildTarget": "shop:build:production"
+        },
+        "development": {
+          "buildTarget": "shop:build:development"
+        }
+      }
+    }
+  }
+}

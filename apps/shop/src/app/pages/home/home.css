@@ -1,0 +1,27 @@
+.hero {
+  padding: 8px 0 16px;
+}
+
+.me {
+  display: grid;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.me strong {
+  font-size: 18px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.product {
+  display: grid;
+  gap: 4px;
+}

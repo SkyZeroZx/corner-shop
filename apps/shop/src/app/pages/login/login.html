@@ -1,0 +1,22 @@
+<h1>Sign in</h1>
+<p class="muted">Demo accounts. No passwords, it is a corner shop.</p>
+
+<div class="row">
+  <button type="button" data-testid="sign-in-ana" (click)="session.signIn('ana')">
+    Sign in as Ana
+  </button>
+  <button type="button" data-testid="sign-in-beto" (click)="session.signIn('beto')">
+    Sign in as Beto
+  </button>
+  <button type="button" class="ghost" data-testid="sign-out" (click)="session.signOut()">
+    Sign out
+  </button>
+</div>
+
+<div role="status">
+  @if (session.name(); as name) {
+    <p data-testid="signed-in">
+      Signed in as <strong>{{ name }}</strong>
+    </p>
+  }
+</div>

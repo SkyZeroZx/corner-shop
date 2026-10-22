@@ -1,0 +1,6 @@
+.order {
+  display: grid;
+  grid-template-columns: 4rem 1fr auto;
+  align-items: center;
+  gap: 16px;
+}

@@ -1,0 +1,20 @@
+<p class="eyebrow">Labs 2 and 3 · Host header and redirects</p>
+<h1>Today's deals</h1>
+
+@if (deals.hasValue()) {
+  <ul class="list">
+    @for (deal of deals.value(); track deal.title) {
+      <li class="card deal" data-testid="deal">
+        <strong>{{ deal.title }}</strong>
+        <span>S/ {{ deal.price | number: '1.2-2' }}</span>
+      </li>
+    }
+  </ul>
+} @else if (deals.error()) {
+  <article class="card warn" data-testid="deal-blocked">
+    <h2>Deals unavailable</h2>
+    <p>{{ reason() }}</p>
+  </article>
+}
+
+<p class="muted small">Since the last Cyber Wow, these come from the campaign site.</p>

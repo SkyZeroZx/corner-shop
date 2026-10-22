@@ -1,0 +1,38 @@
+<header class="topbar">
+  <a routerLink="/" class="brand">Corner Shop</a>
+
+  <nav aria-label="Main">
+    <a
+      routerLink="/"
+      routerLinkActive="active"
+      ariaCurrentWhenActive="page"
+      [routerLinkActiveOptions]="{ exact: true }"
+    >
+      Home
+    </a>
+    <a routerLink="/promos" routerLinkActive="active" ariaCurrentWhenActive="page">Promos</a>
+    <a routerLink="/deals" routerLinkActive="active" ariaCurrentWhenActive="page">Deals</a>
+    <a
+      routerLink="/orders"
+      routerLinkActive="active"
+      ariaCurrentWhenActive="page"
+      data-testid="nav-orders"
+    >
+      Orders
+    </a>
+    <a
+      routerLink="/login"
+      routerLinkActive="active"
+      ariaCurrentWhenActive="page"
+      data-testid="nav-login"
+    >
+      {{ session.name() ?? 'Sign in' }}
+    </a>
+  </nav>
+
+  <span class="mode" [class.safe]="mode === 'safe'" data-testid="mode">{{ mode }} mode</span>
+</header>
+
+<main>
+  <router-outlet />
+</main>

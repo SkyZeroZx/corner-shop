@@ -1,0 +1,48 @@
+<p class="eyebrow">Lab 1 · Two parsers, one URL</p>
+<h1>Promos</h1>
+
+<div class="toggle" role="group" aria-label="Auth interceptor origin check">
+  <span>Auth interceptor check</span>
+  <button
+    type="button"
+    data-testid="check-naive"
+    [attr.aria-pressed]="check.mode() === 'naive'"
+    (click)="check.mode.set('naive')"
+  >
+    regex (naive)
+  </button>
+  <button
+    type="button"
+    data-testid="check-whatwg"
+    [attr.aria-pressed]="check.mode() === 'whatwg'"
+    (click)="check.mode.set('whatwg')"
+  >
+    new URL() (WHATWG)
+  </button>
+</div>
+
+@if (!session.accessToken()) {
+  <p class="card warn">Sign in first, so there is a token to steal.</p>
+}
+
+@if (promos.hasValue()) {
+  <ul class="list">
+    @for (promo of promos.value(); track promo.id) {
+      <li class="card promo">
+        <div>
+          <strong>{{ promo.title }}</strong>
+          <code>trackUrl: {{ promo.trackUrl }}</code>
+        </div>
+        <button type="button" [attr.data-testid]="'save-' + promo.id" (click)="save(promo)">
+          Save promo
+        </button>
+      </li>
+    }
+  </ul>
+}
+
+<div role="status">
+  @if (status(); as message) {
+    <p class="muted" data-testid="status">{{ message }}</p>
+  }
+</div>

@@ -1,0 +1,26 @@
+<section class="hero">
+  <p class="eyebrow">Lab 4 · TransferCache and a shared HTML cache</p>
+  <h1>Your corner shop, now online</h1>
+  <p class="muted">Rendered on the server. Cached at the edge for 60 seconds.</p>
+</section>
+
+@if (me.hasValue()) {
+  @let profile = me.value();
+  <aside class="card me" data-testid="me">
+    <strong>Hi, {{ profile.name }}</strong>
+    <span>Balance S/ {{ profile.balance | number: '1.2-2' }} · {{ profile.points }} points</span>
+    <span class="muted">Deliver to {{ profile.address }}</span>
+  </aside>
+}
+
+<h2>Today in the shop</h2>
+@if (products.hasValue()) {
+  <ul class="grid">
+    @for (product of products.value(); track product.id) {
+      <li class="card product">
+        <span>{{ product.name }}</span>
+        <strong>S/ {{ product.price | number: '1.2-2' }}</strong>
+      </li>
+    }
+  </ul>
+}

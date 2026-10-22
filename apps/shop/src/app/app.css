@@ -1,0 +1,60 @@
+.topbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 24px;
+  min-height: 64px;
+  padding: 12px 32px;
+  background: var(--top-bar);
+  color: #fff;
+}
+
+.brand {
+  color: #fff;
+  font-size: 20px;
+  text-decoration: none;
+}
+
+nav {
+  display: flex;
+  flex: 1;
+  gap: 4px;
+}
+
+nav a {
+  padding: 8px 12px;
+  border-radius: 18px;
+  color: rgb(255 255 255 / 80%);
+  font-size: 14px;
+  font-weight: bold;
+  line-height: 20px;
+  text-decoration: none;
+}
+
+nav a:hover,
+nav a.active {
+  background: rgb(255 255 255 / 12%);
+  color: #fff;
+}
+
+.mode {
+  padding: 4px 12px;
+  border-radius: 12px;
+  background: var(--danger);
+  color: #fff;
+  font-size: 12px;
+  font-weight: bold;
+  line-height: 16px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.mode.safe {
+  background: var(--success);
+}
+
+main {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 32px;
+}
