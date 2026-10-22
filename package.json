@@ -14,6 +14,7 @@
     "lab:urls": "node tools/url-lab.mjs",
     "lab:host": "node tools/labs.mjs host",
     "lab:redirect": "node tools/labs.mjs redirect",
+    "lab:xhr": "node tools/labs.mjs xhr",
     "lab:cache": "node tools/labs.mjs cache",
     "verify": "node tools/verify.mjs",
     "lint": "nx run-many -t lint"
@@ -69,6 +70,7 @@
     "typescript-eslint": "^8.58.0",
     "webpack": "~5.110.0",
     "webpack-cli": "^7.0.0",
-    "webpack-dev-server": "^5.2.1"
+    "webpack-dev-server": "^5.2.1",
+    "xhr2": "^0.2.1"
   }
 }

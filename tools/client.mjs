@@ -10,15 +10,20 @@ export async function clearCaptures() {
   await fetch(`${URLS.attacker}/__log`, { method: 'DELETE' });
 }
 
-/** Signs in through the shop, like the browser does, and returns the sid cookie. */
-export async function signIn(user) {
+/** Signs in through the shop, like the browser does: the sid cookie and the Bearer token. */
+export async function session(user) {
   const response = await fetch(`${URLS.shop}/api/session`, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({ user }),
   });
   const cookie = response.headers.getSetCookie().find((c) => c.startsWith('sid='));
-  return cookie.split(';')[0].slice('sid='.length);
+  const { accessToken } = await response.json();
+  return { sid: cookie.split(';')[0].slice('sid='.length), accessToken };
+}
+
+export async function signIn(user) {
+  return (await session(user)).sid;
 }
 
 /** GET from the shop with node:http, because fetch() does not let you pick the Host header. */
